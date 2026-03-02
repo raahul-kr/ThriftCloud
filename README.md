@@ -1,6 +1,6 @@
 # 🚀 ThriftCloud
 
-ThriftCloud is a DevOps-focused multi-cloud cost intelligence platform supporting AWS and Azure billing analysis.
+ThriftCloud is a DevOps-focused multi-cloud cost intelligence platform supporting both AWS and Azure billing analysis.
 
 It implements a provider abstraction layer (Strategy Pattern) to detect optimization opportunities, calculate efficiency scores, and simulate projected savings.
 
