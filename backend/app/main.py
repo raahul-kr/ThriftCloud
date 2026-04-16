@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.models import AnalyzeRequest, AnalyzeResponse
 from app.analyzer import analyze
 from app.parser import parse_file, ParseError
+from app.normalizer import normalize_billing_data
 
 app = FastAPI(
     title="ThriftCloud API",
@@ -60,6 +61,9 @@ async def analyze_upload(
         billing_data = parse_file(contents, file.filename or "")
     except ParseError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
+
+    # Normalize uploaded service names to canonical forms
+    billing_data = normalize_billing_data(billing_data, provider)
 
     try:
         result = analyze(provider, billing_data)
