@@ -1,0 +1,11 @@
+service,cost
+Amazon EC2,4250.75
+Amazon RDS,1850.20
+Amazon S3,850.50
+AWS Lambda,120.00
+Amazon CloudFront,340.10
+Amazon DynamoDB,420.00
+Amazon Elasticache,210.30
+AWS Key Management Service,15.50
+Amazon API Gateway,85.20
+AWS CloudTrail,45.00
