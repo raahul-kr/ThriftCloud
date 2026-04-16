@@ -5,12 +5,17 @@ from app.models import AnalyzeRequest, AnalyzeResponse
 from app.analyzer import analyze
 from app.parser import parse_file, ParseError
 from app.normalizer import normalize_billing_data
+from app.exceptions import value_error_handler, generic_error_handler
+from app.logging_config import logger
 
 app = FastAPI(
     title="ThriftCloud API",
     description="Multi-cloud cost intelligence platform for AWS and Azure",
     version="1.0.0",
 )
+
+app.add_exception_handler(ValueError, value_error_handler)
+app.add_exception_handler(Exception, generic_error_handler)
 
 app.add_middleware(
     CORSMiddleware,
