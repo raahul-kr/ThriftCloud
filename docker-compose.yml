@@ -2,6 +2,7 @@ version: '3.8'
 
 services:
   backend:
+    image: ${DOCKER_USERNAME:-thriftcloud}/thriftcloud-backend:latest
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -17,6 +18,7 @@ services:
       - thriftcloud-net
 
   frontend:
+    image: ${DOCKER_USERNAME:-thriftcloud}/thriftcloud-frontend:latest
     build:
       context: ./frontend
       dockerfile: Dockerfile

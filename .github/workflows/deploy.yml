@@ -51,6 +51,7 @@ jobs:
             
             # Restart containers with new images
             # (We override the build context to use pre-built images for the prod environment)
+            export DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
             docker compose -f docker-compose.yml up -d
             
             # Clean up old images to save space
