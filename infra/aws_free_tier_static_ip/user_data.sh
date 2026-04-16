@@ -22,5 +22,8 @@ if [ ! -d "ThriftCloud" ]; then
 fi
 
 cd /home/ec2-user/ThriftCloud
-# Start the containers
-docker compose up -d --build
+chown -R ec2-user:ec2-user /home/ec2-user/ThriftCloud
+
+# Note: We do NOT start docker compose here because GitHub Actions handles
+# the deployment securely using credentials to pull from Docker Hub.
+# If we started it here, it would attempt a local build and OOM the server.
