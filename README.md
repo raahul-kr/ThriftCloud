@@ -151,7 +151,7 @@ Terraform will output:
 
 ThriftCloud includes a GitHub Actions pipeline `.github/workflows/deploy.yml` which deploys code to EC2 upon a push to the `main` branch.
 
-### Secrets Setup
+### Secrets Setup:
 To enable the continuous deployment, add the following secrets to your GitHub Repository (**Settings → Secrets and variables → Actions**):
 
 - `DOCKER_USERNAME`: Your Docker Hub username.
