@@ -35,7 +35,7 @@ ThriftCloud allows you to:
 
 ## 🚀 Running Locally
 
-ThriftCloud is fully containerized and easy to run locally.
+ThriftCloud is fully containerized and easy to run locally
 
 ### Option 1: One-Command Start (Windows PowerShell)
 
