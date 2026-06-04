@@ -1,0 +1,81 @@
+# ThriftCloud
+
+ThriftCloud is a capstone-grade FinOps intelligence platform for analyzing cloud spend, surfacing waste, and guiding optimization decisions with local-first AI. This repository is rebuilt from a clean Git history and aligned to the 30-day roadmap in your PDFs.
+
+## What is in this foundation
+
+- `backend/`: FastAPI service with JWT auth, seeded demo billing data, and a FinOps summary API.
+- `frontend/`: React + TypeScript + Tailwind dashboard shell with login, KPI cards, recommendations, and a cost trend chart.
+- `docker-compose.yml`: One-command local stack for PostgreSQL, Redis, backend, and frontend.
+- `docs/architecture.md`: System overview and delivery path from foundation to AI copilot.
+- `.github/workflows/ci.yml`: Backend test and frontend build checks.
+
+## Capstone positioning
+
+This repo is structured to support the roadmap phases you shared:
+
+1. Foundation: repo structure, local stack, auth, seeded billing data
+2. Core FinOps engine: scoring, rule-driven recommendations, dashboard analytics
+3. ML + AI: forecasting, anomaly detection, RAG-backed copilot
+4. Polish + ship: reports, observability, demo-ready experience
+
+## Stack
+
+- Frontend: React 18, TypeScript, Tailwind CSS, Recharts, Zustand, React Router
+- Backend: FastAPI, SQLAlchemy, Pydantic Settings, JWT, Passlib
+- Data: PostgreSQL, Redis
+- DX: Docker Compose, pytest, GitHub Actions
+
+## Quick start
+
+1. Copy `.env.example` to `.env`
+2. Run `docker compose up --build`
+3. Open `http://localhost:5173`
+4. Sign in with the demo account:
+   - Email: `admin@thriftcloud.dev`
+   - Password: `demo12345`
+
+## Local development
+
+### Backend
+
+```bash
+cd backend
+python -m venv .venv
+. .venv/bin/activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+## Current API surface
+
+- `POST /api/v1/auth/login`
+- `POST /api/v1/auth/register`
+- `GET /api/v1/auth/me`
+- `GET /api/v1/dashboard/summary`
+- `GET /api/v1/health`
+
+## What comes next
+
+The current scaffold is intentionally strong enough to demo:
+
+- authentication flow
+- seeded multi-cloud billing data
+- a FinOps score
+- provider-level spend breakdown
+- optimization recommendations
+
+Natural next steps from here are:
+
+1. add rule persistence and recommendation workflows
+2. plug in real AWS/Azure/GCP adapters behind the seeded data layer
+3. add forecasting, anomalies, and AI copilot endpoints
+4. ship PDF reporting and observability dashboards
