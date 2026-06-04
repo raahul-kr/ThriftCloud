@@ -23,3 +23,15 @@ def test_login_and_fetch_dashboard_summary() -> None:
         dashboard = dashboard_response.json()
         assert dashboard["finops_score"] >= 0
         assert dashboard["providers"]
+        assert dashboard["active_rule_count"] >= 4
+        assert dashboard["recommendations"]
+
+        recommendation_response = client.get(
+            "/api/v1/dashboard/recommendations",
+            headers={"Authorization": f"Bearer {payload['access_token']}"},
+        )
+        assert recommendation_response.status_code == 200
+        recommendation_payload = recommendation_response.json()
+        assert recommendation_payload["total_open"] >= 1
+        assert recommendation_payload["active_rule_count"] >= 4
+        assert recommendation_payload["items"]

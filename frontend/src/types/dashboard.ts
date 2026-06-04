@@ -24,11 +24,24 @@ export interface SpendPoint {
 }
 
 export interface RecommendationItem {
+  id: number;
+  recommendation_key: string;
+  rule_key: string;
+  category: string;
+  status: string;
+  severity: string;
   title: string;
   provider: string;
-  estimated_savings: number;
+  service_name?: string | null;
+  region?: string | null;
+  resource_count: number;
+  estimated_monthly_savings: number;
+  estimated_annual_savings: number;
   confidence: number;
   description: string;
+  evidence: string[];
+  next_steps: string[];
+  detected_at: string;
 }
 
 export interface DashboardSummary {
@@ -37,9 +50,13 @@ export interface DashboardSummary {
   monthly_change_percentage: number;
   finops_score: number;
   waste_percentage: number;
+  active_rule_count: number;
+  triggered_rule_count: number;
+  open_recommendation_count: number;
+  potential_monthly_savings: number;
+  potential_annual_savings: number;
   providers: ProviderSpend[];
   trend: SpendPoint[];
   recommendations: RecommendationItem[];
   updated_at: string;
 }
-

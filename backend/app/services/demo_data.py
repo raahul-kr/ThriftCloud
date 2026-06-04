@@ -6,7 +6,15 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
 
 from app.core.security import get_password_hash
-from app.db.models import BillingRecord, CloudProvider, User, UserRole
+from app.db.models import (
+    BillingRecord,
+    CloudProvider,
+    RecommendationSeverity,
+    RuleCategory,
+    RuleDefinition,
+    User,
+    UserRole,
+)
 
 PROVIDER_SERVICES: dict[CloudProvider, list[str]] = {
     CloudProvider.aws: ["EC2", "RDS", "S3", "EBS", "CloudFront"],
@@ -19,6 +27,57 @@ REGIONS = {
     CloudProvider.azure: ["eastus", "centralindia"],
     CloudProvider.gcp: ["us-central1", "asia-south1"],
 }
+
+DEFAULT_RULES = [
+    {
+        "key": "idle-compute-cleanup",
+        "name": "Idle compute cleanup",
+        "description": "Finds idle compute resources that can usually be stopped or decommissioned quickly.",
+        "category": RuleCategory.idle_cleanup,
+        "severity": RecommendationSeverity.high,
+        "threshold": 140.0,
+        "confidence_weight": 0.84,
+        "savings_multiplier": 0.72,
+        "lookback_days": 30,
+        "service_filters": ["EC2", "VM", "Compute Engine"],
+    },
+    {
+        "key": "db-rightsizing",
+        "name": "Database rightsizing",
+        "description": "Flags expensive database services that show low sustained usage in the seeded dataset.",
+        "category": RuleCategory.rightsizing,
+        "severity": RecommendationSeverity.high,
+        "threshold": 30.0,
+        "confidence_weight": 0.8,
+        "savings_multiplier": 0.38,
+        "lookback_days": 30,
+        "service_filters": ["RDS", "SQL Database", "Cloud SQL"],
+    },
+    {
+        "key": "storage-lifecycle-hygiene",
+        "name": "Storage lifecycle hygiene",
+        "description": "Highlights storage services that should move to lifecycle, archive, or cleanup policies.",
+        "category": RuleCategory.storage_hygiene,
+        "severity": RecommendationSeverity.medium,
+        "threshold": 36.0,
+        "confidence_weight": 0.76,
+        "savings_multiplier": 0.29,
+        "lookback_days": 30,
+        "service_filters": ["S3", "Blob Storage", "Cloud Storage", "Persistent Disk", "EBS"],
+    },
+    {
+        "key": "region-cost-concentration",
+        "name": "Region cost concentration",
+        "description": "Detects when a single region dominates a provider footprint and creates optimization risk.",
+        "category": RuleCategory.region_optimization,
+        "severity": RecommendationSeverity.medium,
+        "threshold": 55.0,
+        "confidence_weight": 0.7,
+        "savings_multiplier": 0.12,
+        "lookback_days": 30,
+        "service_filters": [],
+    },
+]
 
 
 def seed_database(db: Session) -> None:
@@ -51,6 +110,17 @@ def seed_database(db: Session) -> None:
 
     if users_to_create:
         db.add_all(users_to_create)
+        db.commit()
+
+    rules_to_create: list[RuleDefinition] = []
+    for rule in DEFAULT_RULES:
+        exists = db.query(RuleDefinition).filter(RuleDefinition.key == rule["key"]).first()
+        if exists:
+            continue
+        rules_to_create.append(RuleDefinition(**rule))
+
+    if rules_to_create:
+        db.add_all(rules_to_create)
         db.commit()
 
     if db.query(BillingRecord).first():

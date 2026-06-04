@@ -3,11 +3,16 @@ from __future__ import annotations
 from collections import defaultdict
 from datetime import datetime, timezone
 
-from app.db.models import BillingRecord
-from app.schemas.dashboard import DashboardSummary, ProviderSpend, RecommendationItem, SpendPoint
+from app.db.models import BillingRecord, RecommendationRecord
+from app.schemas.dashboard import DashboardSummary, RecommendationItem, ProviderSpend, SpendPoint
 
 
-def build_dashboard_summary(records: list[BillingRecord], viewer_name: str) -> DashboardSummary:
+def build_dashboard_summary(
+    records: list[BillingRecord],
+    recommendations: list[RecommendationRecord],
+    viewer_name: str,
+    active_rule_count: int,
+) -> DashboardSummary:
     if not records:
         return DashboardSummary(
             viewer_name=viewer_name,
@@ -15,6 +20,11 @@ def build_dashboard_summary(records: list[BillingRecord], viewer_name: str) -> D
             monthly_change_percentage=0,
             finops_score=100,
             waste_percentage=0,
+            active_rule_count=active_rule_count,
+            triggered_rule_count=0,
+            open_recommendation_count=0,
+            potential_monthly_savings=0,
+            potential_annual_savings=0,
             providers=[],
             trend=[],
             recommendations=[],
@@ -28,15 +38,11 @@ def build_dashboard_summary(records: list[BillingRecord], viewer_name: str) -> D
     provider_costs: dict[str, float] = defaultdict(float)
     provider_counts: dict[str, int] = defaultdict(int)
     trend_costs: dict[str, float] = defaultdict(float)
-    service_waste: dict[tuple[str, str], float] = defaultdict(float)
-
     for record in records:
         provider_key = record.provider.value.upper()
         provider_costs[provider_key] += record.cost
         provider_counts[provider_key] += 1
         trend_costs[record.billed_at.strftime("%b %Y")] += record.cost
-        if record.is_idle:
-            service_waste[(provider_key, record.service_name)] += record.cost
 
     providers = [
         ProviderSpend(
@@ -63,30 +69,19 @@ def build_dashboard_summary(records: list[BillingRecord], viewer_name: str) -> D
 
     utilization_score = max(0, round(100 - waste_percentage))
     hygiene_score = max(0, round(100 - (len([r for r in records if r.is_idle]) / len(records)) * 120))
-    diversification_score = 70 + min(30, len(provider_costs) * 10)
-    finops_score = round((utilization_score * 0.5) + (hygiene_score * 0.3) + (diversification_score * 0.2))
+    automation_score = 60 + min(40, active_rule_count * 10)
+    recommendation_pressure = min(18, len(recommendations) * 3)
+    finops_score = round(
+        (utilization_score * 0.45)
+        + (hygiene_score * 0.25)
+        + (automation_score * 0.2)
+        + (max(0, 100 - recommendation_pressure) * 0.1)
+    )
 
-    recommendations = [
-        RecommendationItem(
-            title=f"Review {service} waste on {provider}",
-            provider=provider,
-            estimated_savings=round(cost, 2),
-            confidence=min(0.95, round(0.62 + (cost / max(total_cost, 1)), 2)),
-            description=f"Idle or underutilized {service} resources are driving avoidable spend on {provider}.",
-        )
-        for (provider, service), cost in sorted(service_waste.items(), key=lambda item: item[1], reverse=True)[:3]
-    ]
-
-    if not recommendations:
-        recommendations.append(
-            RecommendationItem(
-                title="Healthy cloud posture detected",
-                provider="MULTI",
-                estimated_savings=0,
-                confidence=0.88,
-                description="No high-confidence waste clusters were detected in the current seeded dataset.",
-            )
-        )
+    recommendation_items = [RecommendationItem.model_validate(item) for item in recommendations[:5]]
+    triggered_rule_count = len({item.rule_key for item in recommendations})
+    potential_monthly_savings = round(sum(item.estimated_monthly_savings for item in recommendations), 2)
+    potential_annual_savings = round(sum(item.estimated_annual_savings for item in recommendations), 2)
 
     return DashboardSummary(
         viewer_name=viewer_name,
@@ -94,8 +89,13 @@ def build_dashboard_summary(records: list[BillingRecord], viewer_name: str) -> D
         monthly_change_percentage=monthly_change,
         finops_score=finops_score,
         waste_percentage=waste_percentage,
+        active_rule_count=active_rule_count,
+        triggered_rule_count=triggered_rule_count,
+        open_recommendation_count=len(recommendations),
+        potential_monthly_savings=potential_monthly_savings,
+        potential_annual_savings=potential_annual_savings,
         providers=providers,
         trend=trend,
-        recommendations=recommendations,
+        recommendations=recommendation_items,
         updated_at=datetime.now(timezone.utc),
     )

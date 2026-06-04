@@ -76,15 +76,13 @@ export function DashboardPage() {
               <p className="text-sm font-semibold uppercase tracking-[0.32em] text-emerald-700">Control Center</p>
               <h1 className="mt-3 text-4xl font-semibold text-slate-900">Welcome back, {summary.viewer_name}</h1>
               <p className="mt-3 max-w-3xl text-slate-600">
-                This first milestone already tells a strong capstone story: authentic local stack, seeded cloud cost
-                signals, and a narrative around measurable optimization.
+                The dashboard is now being driven by persisted rule evaluations, so every recommendation is tied to a
+                named rule, evidence trail, and next-step playbook.
               </p>
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="rounded-2xl bg-slate-100 px-4 py-3 text-sm text-slate-700">
-                {user?.email} · {user?.role}
-              </div>
+              <div className="rounded-2xl bg-slate-100 px-4 py-3 text-sm text-slate-700">{user?.email} | {user?.role}</div>
               <button
                 className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                 onClick={() => {
@@ -98,7 +96,7 @@ export function DashboardPage() {
           </div>
         </header>
 
-        <section className="mt-8 grid gap-5 md:grid-cols-3">
+        <section className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
           <MetricCard
             label="Total Spend"
             value={formatMoney(summary.total_cost)}
@@ -114,11 +112,18 @@ export function DashboardPage() {
             icon={<span className="text-xl">%</span>}
           />
           <MetricCard
-            label="Live Recommendations"
-            value={String(summary.recommendations.length)}
-            hint="High-confidence optimization opportunities"
+            label="Active Rules"
+            value={`${summary.triggered_rule_count}/${summary.active_rule_count}`}
+            hint="Triggered versus configured rule coverage"
             accent="bg-cyan-100 text-cyan-700"
             icon={<span className="text-xl">!</span>}
+          />
+          <MetricCard
+            label="Potential Savings"
+            value={formatMoney(summary.potential_monthly_savings)}
+            hint={`${summary.open_recommendation_count} open recommendations`}
+            accent="bg-rose-100 text-rose-700"
+            icon={<span className="text-xl">+</span>}
           />
         </section>
 
@@ -139,4 +144,3 @@ export function DashboardPage() {
     </main>
   );
 }
-
