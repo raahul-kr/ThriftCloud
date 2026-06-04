@@ -1,2 +1,0 @@
-# backend
-"""ThriftCloud backend package."""
