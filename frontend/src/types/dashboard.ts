@@ -41,7 +41,17 @@ export interface RecommendationItem {
   description: string;
   evidence: string[];
   next_steps: string[];
+  assigned_owner?: string | null;
   detected_at: string;
+  updated_at: string;
+  acknowledged_at?: string | null;
+}
+
+export type RecommendationAction = "acknowledge" | "dismiss" | "assign_owner" | "resolve";
+
+export interface RecommendationUpdateResponse {
+  item: RecommendationItem;
+  message: string;
 }
 
 export interface DashboardSummary {

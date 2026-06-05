@@ -29,21 +29,26 @@ export function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  async function loadDashboard() {
     if (!token) {
       navigate("/");
       return;
     }
 
-    fetchDashboard(token)
-      .then((result) => {
-        setSummary(result);
-        setError(null);
-      })
-      .catch((dashboardError) => {
-        setError(dashboardError instanceof Error ? dashboardError.message : "Unable to load dashboard");
-      })
-      .finally(() => setLoading(false));
+    setLoading(true);
+    try {
+      const result = await fetchDashboard(token);
+      setSummary(result);
+      setError(null);
+    } catch (dashboardError) {
+      setError(dashboardError instanceof Error ? dashboardError.message : "Unable to load dashboard");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    void loadDashboard();
   }, [navigate, token]);
 
   if (loading) {
@@ -138,7 +143,12 @@ export function DashboardPage() {
         </section>
 
         <section className="mt-8">
-          <RecommendationsPanel recommendations={summary.recommendations} />
+          <RecommendationsPanel
+            recommendations={summary.recommendations}
+            token={token ?? ""}
+            isAdmin={user?.role === "admin"}
+            onRecommendationUpdated={loadDashboard}
+          />
         </section>
       </div>
     </main>

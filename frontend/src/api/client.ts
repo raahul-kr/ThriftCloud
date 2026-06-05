@@ -1,4 +1,9 @@
-import type { AuthResponse, DashboardSummary } from "../types/dashboard";
+import type {
+  AuthResponse,
+  DashboardSummary,
+  RecommendationAction,
+  RecommendationUpdateResponse
+} from "../types/dashboard";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000/api/v1";
 
@@ -31,6 +36,24 @@ export function fetchDashboard(token: string): Promise<DashboardSummary> {
     headers: {
       Authorization: `Bearer ${token}`
     }
+  });
+}
+
+export function updateRecommendation(
+  token: string,
+  recommendationId: number,
+  action: RecommendationAction,
+  assignedOwner?: string
+): Promise<RecommendationUpdateResponse> {
+  return request<RecommendationUpdateResponse>(`/dashboard/recommendations/${recommendationId}`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      action,
+      assigned_owner: assignedOwner
+    })
   });
 }
 
