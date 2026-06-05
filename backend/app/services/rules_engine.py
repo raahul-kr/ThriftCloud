@@ -348,7 +348,27 @@ def run_rule_engine(db: Session, records: list[BillingRecord]) -> tuple[list[Rul
 
         recommendation.rule_key = evaluation.rule_key
         recommendation.category = evaluation.category
-        recommendation.status = RecommendationStatus.open
+        if recommendation.status == RecommendationStatus.dismissed:
+            recommendation.provider = evaluation.provider
+            recommendation.service_name = evaluation.service_name
+            recommendation.region = evaluation.region
+            recommendation.resource_count = evaluation.resource_count
+            recommendation.severity = evaluation.severity
+            recommendation.title = evaluation.title
+            recommendation.description = evaluation.description
+            recommendation.estimated_monthly_savings = evaluation.estimated_monthly_savings
+            recommendation.estimated_annual_savings = evaluation.estimated_annual_savings
+            recommendation.confidence = evaluation.confidence
+            recommendation.evidence = evaluation.evidence
+            recommendation.next_steps = evaluation.next_steps
+            recommendation.updated_at = now
+            continue
+
+        if recommendation.status == RecommendationStatus.resolved:
+            recommendation.status = RecommendationStatus.open
+            recommendation.resolved_at = None
+            recommendation.acknowledged_at = None
+
         recommendation.provider = evaluation.provider
         recommendation.service_name = evaluation.service_name
         recommendation.region = evaluation.region

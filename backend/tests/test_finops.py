@@ -55,6 +55,7 @@ def test_build_dashboard_summary_returns_expected_metrics() -> None:
             evidence=["Observed idle spend: $80.00"],
             next_steps=["Stop or delete unused compute."],
             detected_at=datetime(2026, 5, 1),
+            updated_at=datetime(2026, 5, 1),
         )
     ]
 

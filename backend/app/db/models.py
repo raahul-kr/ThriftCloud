@@ -115,6 +115,8 @@ class RecommendationRecord(Base):
     confidence: Mapped[float] = mapped_column(Float, nullable=False)
     evidence: Mapped[list[str]] = mapped_column(JSON, default=list, nullable=False)
     next_steps: Mapped[list[str]] = mapped_column(JSON, default=list, nullable=False)
+    assigned_owner: Mapped[str | None] = mapped_column(String(255), nullable=True)
     detected_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now_naive, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now_naive, onupdate=utc_now_naive, nullable=False)
+    acknowledged_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     resolved_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)

@@ -1,6 +1,7 @@
 from datetime import datetime
+from enum import Enum
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ProviderSpend(BaseModel):
@@ -34,7 +35,10 @@ class RecommendationItem(BaseModel):
     description: str
     evidence: list[str]
     next_steps: list[str]
+    assigned_owner: str | None = None
     detected_at: datetime
+    updated_at: datetime
+    acknowledged_at: datetime | None = None
 
 
 class DashboardSummary(BaseModel):
@@ -59,3 +63,20 @@ class RecommendationListResponse(BaseModel):
     active_rule_count: int
     total_open: int
     generated_at: datetime
+
+
+class RecommendationAction(str, Enum):
+    acknowledge = "acknowledge"
+    dismiss = "dismiss"
+    assign_owner = "assign_owner"
+    resolve = "resolve"
+
+
+class RecommendationUpdateRequest(BaseModel):
+    action: RecommendationAction
+    assigned_owner: str | None = Field(default=None, max_length=255)
+
+
+class RecommendationUpdateResponse(BaseModel):
+    item: RecommendationItem
+    message: str
