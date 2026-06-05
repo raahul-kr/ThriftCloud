@@ -1,6 +1,6 @@
 # AI Handoff Notes
 
-Last updated: 2026-06-05
+Last updated: 2026-06-06
 
 This document is the working memory for future AI agents and developers. Keep it updated whenever meaningful project work is completed, deferred, or re-scoped.
 
@@ -10,10 +10,10 @@ ThriftCloud is a capstone FinOps intelligence platform. The current build is a l
 
 ## Current status
 
-The project is in a strong Phase 2 foundation state:
+The project is in an early Phase 3 state with completed recommendation workflows and deterministic ML-style insights:
 
-- Backend API exists with FastAPI, JWT authentication, SQLAlchemy models, seeded demo users, seeded billing records, seeded optimization rules, and persisted recommendation records.
-- Frontend exists with React, TypeScript, Tailwind CSS, Zustand auth state, React Router routing, dashboard cards, provider breakdowns, trend chart, score dial, roadmap panel, and recommendation panel.
+- Backend API exists with FastAPI, JWT authentication, SQLAlchemy models, seeded demo users, seeded billing records, seeded optimization rules, persisted recommendation records, recommendation lifecycle updates, spend forecasting, and provider anomaly detection.
+- Frontend exists with React, TypeScript, Tailwind CSS, Zustand auth state, React Router routing, dashboard cards, provider breakdowns, trend chart, score dial, roadmap panel, recommendation workflow controls, forecast panel, and anomaly panel.
 - Local stack exists through Docker Compose for PostgreSQL, Redis, backend, and frontend.
 - Test coverage exists for backend auth/security, dashboard API, FinOps metric generation, and rules engine evaluation.
 - CI workflow exists for backend pytest and frontend production build.
@@ -31,6 +31,9 @@ The project is in a strong Phase 2 foundation state:
 - Dashboard endpoints:
   - `GET /api/v1/dashboard/summary`
   - `GET /api/v1/dashboard/recommendations`
+  - `PATCH /api/v1/dashboard/recommendations/{id}`
+  - `GET /api/v1/dashboard/forecast`
+  - `GET /api/v1/dashboard/anomalies`
 - Health endpoint:
   - `GET /api/v1/health`
 - Database models:
@@ -43,6 +46,11 @@ The project is in a strong Phase 2 foundation state:
   - Demo password: `demo12345`
   - 90 days of deterministic seeded billing records
   - Four default optimization rules
+- Recommendation lifecycle service:
+  - acknowledge
+  - dismiss
+  - assign owner (admin only)
+  - resolve
 - Rules engine:
   - Idle compute cleanup
   - Database rightsizing
@@ -57,6 +65,12 @@ The project is in a strong Phase 2 foundation state:
   - Cost trend
   - Open recommendations
   - Potential monthly and annual savings
+- Forecasting service:
+  - Deterministic trend extrapolation from monthly billing history
+  - Three-month forward projection with confidence score
+- Anomaly detection service:
+  - Provider-level monthly spend spike detection
+  - Baseline comparison with severity labels
 
 ### Frontend
 
@@ -74,7 +88,9 @@ The project is in a strong Phase 2 foundation state:
   - Roadmap panel
   - Spend trend chart
   - Provider breakdown
-  - Recommendation cards with evidence and next steps
+  - Recommendation cards with evidence, next steps, and lifecycle actions
+  - Forecast chart with projected monthly change and confidence
+  - Anomaly cards for provider spend spikes
 
 ### DevOps and docs
 
@@ -96,11 +112,17 @@ The project is in a strong Phase 2 foundation state:
 - `backend/app/db/models.py`: SQLAlchemy models and enums.
 - `backend/app/services/demo_data.py`: seeded users, rules, and billing data.
 - `backend/app/services/rules_engine.py`: rule evaluation and persisted recommendation sync.
+- `backend/app/services/recommendations.py`: recommendation lifecycle updates.
+- `backend/app/services/forecasting.py`: deterministic spend forecast generation.
+- `backend/app/services/anomalies.py`: provider spend anomaly detection.
 - `backend/app/services/finops.py`: dashboard metric aggregation.
+- `backend/app/db/schema.py`: lightweight schema sync for additive columns.
 - `frontend/src/api/client.ts`: frontend API client.
 - `frontend/src/store/authStore.ts`: auth state persistence.
 - `frontend/src/pages/LoginPage.tsx`: login UI.
 - `frontend/src/pages/DashboardPage.tsx`: main dashboard UI.
+- `frontend/src/components/ForecastPanel.tsx`: forecast visualization.
+- `frontend/src/components/AnomalyPanel.tsx`: anomaly insight cards.
 - `frontend/src/types/dashboard.ts`: frontend DTO types.
 
 ## How to run locally
@@ -152,31 +174,24 @@ npm run build
 
 - Data is seeded/demo-only; no real AWS, Azure, or GCP ingestion is implemented yet.
 - Database tables are created with `Base.metadata.create_all`; no migration tool such as Alembic is configured yet.
-- Recommendations can be generated and persisted, but there is no user workflow yet for acknowledgment, dismissal, owner assignment, or resolution from the UI.
+- Recommendation lifecycle actions exist, but there is no audit history or bulk workflow yet.
 - Redis is included in the stack but is reserved for future queue/cache/async work.
 - Auth is functional for local demo use, but production hardening is still needed.
-- Frontend currently fetches dashboard summary only; it does not call the standalone recommendations list endpoint.
-- No ML forecasting, anomaly detection, vector store, RAG, AI copilot, or PDF reporting is implemented yet.
+- Forecasting and anomaly detection are deterministic demo services, not trained ML models yet.
+- No vector store, RAG, AI copilot, or PDF reporting is implemented yet.
 
 ## Next recommended work
 
 ### Highest priority
 
-1. Add recommendation lifecycle APIs:
-   - acknowledge
-   - dismiss
-   - assign owner
-   - mark resolved
-2. Add matching frontend controls for the recommendation workflow.
-3. Add Alembic migrations before the data model grows further.
-4. Add stronger API tests around recommendation status transitions.
+1. Add Alembic migrations before the data model grows further.
+2. Add cloud provider adapter interfaces behind the seeded data layer.
+3. Implement import paths for AWS Cost Explorer, Azure Cost Management, and GCP Billing exports.
+4. Replace deterministic forecast/anomaly logic with model-backed services when ready.
 
 ### Medium priority
 
-1. Add cloud provider adapter interfaces behind the seeded data layer.
-2. Implement import paths for AWS Cost Explorer, Azure Cost Management, and GCP Billing exports.
-3. Add forecasting and anomaly service modules with deterministic local demo outputs first.
-4. Add CSV/PDF export for capstone reporting.
+1. Add CSV/PDF export for capstone reporting.
 5. Add basic observability with structured request logs and useful health details.
 
 ### Later roadmap
@@ -191,12 +206,11 @@ npm run build
 
 If continuing from here, work in this order:
 
-1. Implement backend recommendation status update endpoint in `backend/app/api/routes/dashboard.py`.
-2. Add request/response schemas in `backend/app/schemas/dashboard.py`.
-3. Add tests in `backend/tests/test_api.py` for dismissing or resolving a recommendation.
-4. Add frontend API client methods in `frontend/src/api/client.ts`.
-5. Update `RecommendationsPanel` to expose lifecycle actions.
-6. Refresh this document and `README.md` after validation.
+1. Add Alembic and generate the first migration for the current schema.
+2. Add provider adapter interfaces and CSV import paths for AWS, Azure, and GCP billing exports.
+3. Add CSV/PDF export endpoints for capstone reporting.
+4. Add vector store-backed knowledge retrieval and AI copilot endpoints with citations.
+5. Refresh this document and `README.md` after validation.
 
 ## Documentation maintenance rule
 
