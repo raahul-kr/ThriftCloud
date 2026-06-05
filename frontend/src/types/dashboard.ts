@@ -54,6 +54,37 @@ export interface RecommendationUpdateResponse {
   message: string;
 }
 
+export interface ForecastPoint {
+  label: string;
+  total_cost: number;
+  kind: "actual" | "forecast" | string;
+}
+
+export interface SpendForecastResponse {
+  history: ForecastPoint[];
+  forecast: ForecastPoint[];
+  projected_monthly_change_percentage: number;
+  confidence: number;
+  method: string;
+  generated_at: string;
+}
+
+export interface SpendAnomaly {
+  provider: string;
+  label: string;
+  observed_cost: number;
+  baseline_cost: number;
+  deviation_percentage: number;
+  severity: string;
+  summary: string;
+}
+
+export interface SpendAnomalyResponse {
+  items: SpendAnomaly[];
+  scanned_points: number;
+  generated_at: string;
+}
+
 export interface DashboardSummary {
   viewer_name: string;
   total_cost: number;

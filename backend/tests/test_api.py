@@ -103,3 +103,25 @@ def test_viewer_cannot_assign_recommendation_owner() -> None:
             json={"action": "assign_owner", "assigned_owner": "Viewer Team"},
         )
         assert assign_response.status_code == 403
+
+
+def test_forecast_and_anomaly_endpoints() -> None:
+    with TestClient(app) as client:
+        login_response = client.post(
+            "/api/v1/auth/login",
+            json={"email": "admin@thriftcloud.dev", "password": "demo12345"},
+        )
+        headers = {"Authorization": f"Bearer {login_response.json()['access_token']}"}
+
+        forecast_response = client.get("/api/v1/dashboard/forecast", headers=headers)
+        assert forecast_response.status_code == 200
+        forecast_payload = forecast_response.json()
+        assert forecast_payload["history"]
+        assert forecast_payload["forecast"]
+        assert forecast_payload["method"] == "deterministic_trend_extrapolation"
+
+        anomaly_response = client.get("/api/v1/dashboard/anomalies", headers=headers)
+        assert anomaly_response.status_code == 200
+        anomaly_payload = anomaly_response.json()
+        assert "items" in anomaly_payload
+        assert anomaly_payload["scanned_points"] >= 1

@@ -80,3 +80,34 @@ class RecommendationUpdateRequest(BaseModel):
 class RecommendationUpdateResponse(BaseModel):
     item: RecommendationItem
     message: str
+
+
+class ForecastPoint(BaseModel):
+    label: str
+    total_cost: float
+    kind: str
+
+
+class SpendForecastResponse(BaseModel):
+    history: list[ForecastPoint]
+    forecast: list[ForecastPoint]
+    projected_monthly_change_percentage: float
+    confidence: float
+    method: str
+    generated_at: datetime
+
+
+class SpendAnomaly(BaseModel):
+    provider: str
+    label: str
+    observed_cost: float
+    baseline_cost: float
+    deviation_percentage: float
+    severity: str
+    summary: str
+
+
+class SpendAnomalyResponse(BaseModel):
+    items: list[SpendAnomaly]
+    scanned_points: int
+    generated_at: datetime

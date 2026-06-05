@@ -11,8 +11,12 @@ from app.schemas.dashboard import (
     RecommendationListResponse,
     RecommendationUpdateRequest,
     RecommendationUpdateResponse,
+    SpendAnomalyResponse,
+    SpendForecastResponse,
 )
+from app.services.anomalies import detect_spend_anomalies
 from app.services.finops import build_dashboard_summary
+from app.services.forecasting import build_spend_forecast
 from app.services.recommendations import update_recommendation
 from app.services.rules_engine import run_rule_engine
 
@@ -55,6 +59,24 @@ def list_dashboard_recommendations(
         total_open=len(recommendations),
         generated_at=datetime.now(timezone.utc),
     )
+
+
+@router.get("/forecast", response_model=SpendForecastResponse)
+def get_spend_forecast(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> SpendForecastResponse:
+    records = db.query(BillingRecord).order_by(BillingRecord.billed_at.asc()).all()
+    return build_spend_forecast(records)
+
+
+@router.get("/anomalies", response_model=SpendAnomalyResponse)
+def get_spend_anomalies(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> SpendAnomalyResponse:
+    records = db.query(BillingRecord).order_by(BillingRecord.billed_at.asc()).all()
+    return detect_spend_anomalies(records)
 
 
 @router.patch("/recommendations/{recommendation_id}", response_model=RecommendationUpdateResponse)

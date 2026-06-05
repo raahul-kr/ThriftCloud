@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { fetchDashboard } from "../api/client";
+import { fetchDashboard, fetchSpendAnomalies, fetchSpendForecast } from "../api/client";
+import { AnomalyPanel } from "../components/AnomalyPanel";
+import { ForecastPanel } from "../components/ForecastPanel";
 import { MetricCard } from "../components/MetricCard";
 import { ProvidersPanel } from "../components/ProvidersPanel";
 import { RecommendationsPanel } from "../components/RecommendationsPanel";
@@ -9,7 +11,7 @@ import { RoadmapPanel } from "../components/RoadmapPanel";
 import { ScoreDial } from "../components/ScoreDial";
 import { TrendChart } from "../components/TrendChart";
 import { useAuthStore } from "../store/authStore";
-import type { DashboardSummary } from "../types/dashboard";
+import type { DashboardSummary, SpendAnomalyResponse, SpendForecastResponse } from "../types/dashboard";
 
 function formatMoney(value: number) {
   return new Intl.NumberFormat("en-US", {
@@ -26,6 +28,8 @@ export function DashboardPage() {
   const clearSession = useAuthStore((state) => state.clearSession);
 
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
+  const [forecast, setForecast] = useState<SpendForecastResponse | null>(null);
+  const [anomalies, setAnomalies] = useState<SpendAnomalyResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -37,8 +41,14 @@ export function DashboardPage() {
 
     setLoading(true);
     try {
-      const result = await fetchDashboard(token);
+      const [result, forecastResult, anomalyResult] = await Promise.all([
+        fetchDashboard(token),
+        fetchSpendForecast(token),
+        fetchSpendAnomalies(token)
+      ]);
       setSummary(result);
+      setForecast(forecastResult);
+      setAnomalies(anomalyResult);
       setError(null);
     } catch (dashboardError) {
       setError(dashboardError instanceof Error ? dashboardError.message : "Unable to load dashboard");
@@ -141,6 +151,13 @@ export function DashboardPage() {
           <TrendChart data={summary.trend} />
           <ProvidersPanel providers={summary.providers} />
         </section>
+
+        {forecast && anomalies ? (
+          <section className="mt-8 grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+            <ForecastPanel forecast={forecast} />
+            <AnomalyPanel anomalies={anomalies} />
+          </section>
+        ) : null}
 
         <section className="mt-8">
           <RecommendationsPanel

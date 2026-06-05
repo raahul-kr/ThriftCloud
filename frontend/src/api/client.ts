@@ -2,7 +2,9 @@ import type {
   AuthResponse,
   DashboardSummary,
   RecommendationAction,
-  RecommendationUpdateResponse
+  RecommendationUpdateResponse,
+  SpendAnomalyResponse,
+  SpendForecastResponse
 } from "../types/dashboard";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000/api/v1";
@@ -33,6 +35,22 @@ export function login(email: string, password: string): Promise<AuthResponse> {
 
 export function fetchDashboard(token: string): Promise<DashboardSummary> {
   return request<DashboardSummary>("/dashboard/summary", {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+}
+
+export function fetchSpendForecast(token: string): Promise<SpendForecastResponse> {
+  return request<SpendForecastResponse>("/dashboard/forecast", {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+}
+
+export function fetchSpendAnomalies(token: string): Promise<SpendAnomalyResponse> {
+  return request<SpendAnomalyResponse>("/dashboard/anomalies", {
     headers: {
       Authorization: `Bearer ${token}`
     }
