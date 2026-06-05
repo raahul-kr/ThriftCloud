@@ -8,6 +8,7 @@ ThriftCloud is a capstone-grade FinOps intelligence platform for analyzing cloud
 - `frontend/`: React + TypeScript + Tailwind dashboard shell with login, KPI cards, recommendations, and a cost trend chart.
 - `docker-compose.yml`: One-command local stack for PostgreSQL, Redis, backend, and frontend.
 - `docs/architecture.md`: System overview and delivery path from foundation to AI copilot.
+- `docs/AI_HANDOFF.md`: Living handoff notes for future AI agents and developers.
 - `.github/workflows/ci.yml`: Backend test and frontend build checks.
 
 ## Capstone positioning
